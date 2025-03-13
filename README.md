@@ -6,10 +6,10 @@ JMatrix is a lightweight java package that is designed for working with 2 dimens
 
 The computation metrics are recorded for a 2 dimensional floating point matrix of size 1000X1000. Therefore, a total of 2*10e6 FLOPS including the scalar addition and multiplication that are involved.
 
-|			Operation			   |	Execution Time (in seconds)	|	
+|			Operation			   |	Execution Time	|	
 |----------------------------------|--------------------------------|
-| Matrix multiplication (Normal)   |			3.409885218 	    |
-| Matrix multiplication (Parallel) |  			0.774605248 	    | 
+| Matrix multiplication (Normal)   |			> 10 minutes 	    |
+| Matrix multiplication (Parallel) |  			0.034605248 	seconds    | 
 
 Each Matrix object consists of a timeTaken propery that tracks the running time of the arithmetic operations performed on the object.
 The recorded time is mesured in nanoseconds.
