@@ -4,6 +4,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Optional;
+import operations.Add;
 
 /**
  * This class contains various methods for performing numerical 
@@ -42,7 +43,7 @@ public class Matrix<T extends Number>{
 	public long timeTaken;
 	
 	/**
-	 * Interal counters that record the start and end time of an arithmetic operation
+	 * Internal counters that record the start and end time of an arithmetic operation
 	 */
 	private long startTime,endTime;
 	
@@ -63,7 +64,7 @@ public class Matrix<T extends Number>{
 	
 	private ArrayList<Thread>threadPool;
 	
-	private static enum Arithmetic{
+	public static enum Arithmetic{
 		MUL,
 		DIV,
 		SUB,
@@ -86,8 +87,8 @@ public class Matrix<T extends Number>{
 	
 	/**
 	 * Accepts a 2d array as specified during instantiation. This constructor 
-	 * does not require the dimensions to be specified explicity as the length 
-	 * propery of the array will be used to arrive at those values.
+	 * does not require the dimensions to be specified explicitly as the length 
+	 * property of the array will be used to arrive at those values.
 	 * @param mat
 	 */
 	public Matrix(T mat[][]){
@@ -95,6 +96,13 @@ public class Matrix<T extends Number>{
 		this.colSize = mat[0].length;
 		this.arrayDimensions = setArrayDimensions(this.rowSize,this.colSize);
 		this.mat  = mat;
+	}
+	
+	public Matrix(int rowSize, int colSize) {
+		this.rowSize = rowSize;
+		this.colSize = colSize;
+		this.arrayDimensions = setArrayDimensions(rowSize,colSize);
+		this.mat = getArray(mat.getClass().getComponentType(), this.arrayDimensions);
 	}
 	
 	/*
@@ -111,6 +119,10 @@ public class Matrix<T extends Number>{
 			row = col==0?row+1:row;
 		}
 		return matrix;
+	}
+	
+	public T get(int row, int col) {
+		return mat[row][col];
 	}
 	
 	/*
@@ -157,6 +169,14 @@ public class Matrix<T extends Number>{
 		}
 	}
 	
+	public int getRowSize() {
+		return rowSize;
+	}
+	
+	public int getColumnSize() {
+		return colSize;
+	}
+	
 	/*
 	 * Constructs a matrix representational view of the Matrix object.
 	 */
@@ -195,43 +215,6 @@ public class Matrix<T extends Number>{
 		return sum;
 	}
 	
-	/**
-	 * Adds the given scalar to all the elements of the matrix 
-	 * and returns a new instance of the resultant matrix.
-	 */
-	public <E extends Number>Matrix<Double> add(E scalarValue){
-		initializeResultantMatrix(rowSize,colSize);
-		for(int row = 0;row<rowSize;row++){
-			for(int col = 0;col<colSize;col++){
-				res[row][col] = mat[row][col].doubleValue() + scalarValue.doubleValue();
-			}
-		}
-		return new Matrix<>(res);
-	}
-	
-	/**
-	 * Performs matrix addition. If the matrices involved in the operation 
-	 * differ in their dimensions but follow the broadcasting rules, the operation
-	 * is performed by "broadcasting" the smaller matrix across the larger one. This
-	 * is done without creating additional copies of the matrix.
-	 */
-	public Matrix<Double> add(Matrix other){			
-		if(isBroadcastable(this,other)){
-			return broadcastedArithmetic(this,other,Arithmetic.ADD,false);			
-		}	
-		if(standardArithmeticApplicable(this, other,Arithmetic.ADD)){
-			return performStandardArithmetic(other,Arithmetic.ADD);
-		}
-		if(other.rowSize == 1 && other.colSize == 1){
-			return add(other.mat[0][0]);
-		}
-		if(this.rowSize == 1 && this.colSize == 1){
-			return other.add(this.mat[0][0]);
-		}
-		throwInvalidDimensionException();
-		return other;
-	}
-	
 	private <E extends Number> Matrix<Double> subtract(E scalarValue,boolean reOrdered){
 		initializeResultantMatrix(rowSize,colSize);
 		for(int row = 0;row<rowSize;row++){
@@ -249,6 +232,10 @@ public class Matrix<T extends Number>{
 	 */
 	public <E extends Number> Matrix<Double>subtract(E scalarValue){
 		return subtract(scalarValue,false);
+	}
+	
+	public Matrix<Double> add(Number val){
+		return Add.add(this, val);
 	}
 	
 	/**
