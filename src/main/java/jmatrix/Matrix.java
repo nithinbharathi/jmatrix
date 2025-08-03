@@ -8,10 +8,7 @@ import operations.SubtractUtils;
 /*
  * This class contains various methods for performing numerical 
  * calculations on 2 dimensional arrays. Some of the operations 
- * support parallelism for faster computation by utilizing multiple
- * threads available during runtime. The class is applicable to all
- * the Numerical types that extend the Number class in java (Integer, 
- * Long, Float, and Double).
+ * support parallelism.
  *  
  * @author : Nithin Bharathi 17-Jul-2023
  */
@@ -25,10 +22,10 @@ public class Matrix{
 	
 	/*
 	 * Accepts a single dimensional array and transforms it into a matrix 
-	 * based on the dimensions specified during instantiation.
-	 * @param mat
-	 * @param rowSize
-	 * @param colSize
+	 * based on the dimensions specified.
+	 * @param mat 1d double array
+	 * @param rowSize the number of rows in the matrix
+	 * @param colSize the number of columns in the matrix
 	 */	
 	public Matrix(double mat[],int rowSize, int colSize){		
 		this.colSize = colSize;
@@ -37,10 +34,8 @@ public class Matrix{
 	}
 	
 	/*
-	 * Accepts a 2d array as specified during instantiation. This constructor 
-	 * does not require the dimensions to be specified explicitly as the length 
-	 * property of the array will be used to arrive at those values.
-	 * @param mat
+	 * Creates a matrix using the 2d array specified.
+	 * @param mat 2d double array
 	 */
 	public Matrix(double mat[][]){
 		this.rowSize = mat.length;
@@ -48,6 +43,11 @@ public class Matrix{
 		this.mat  = mat;
 	}
 	
+	/*
+	 * Creates matrix with the given dimensions, filled with zeros.
+	 * @param rowSize the number of rows in the matrix
+	 * @param colSize the number of columns in the matrix
+	 */
 	public Matrix(int rowSize, int colSize) {
 		this.rowSize = rowSize;
 		this.colSize = colSize;
@@ -72,6 +72,10 @@ public class Matrix{
 	
 	public double get(int row, int col) {
 		return mat[row][col];
+	}
+
+	public void set(int row, int col, double val){
+		mat[row][col] = val;
 	}
 
 	private void validateDimensions(int len){
@@ -108,17 +112,13 @@ public class Matrix{
 	public void view(){	
 		if(matrixRepresentation == null)buildMatrix();		
 		System.out.println(matrixRepresentation);
-		
 	}
 	
 	public double sum(){
 		return AddUtils.sum(this);
 	}
 	
-	/*
-	 * Substracts the scalar value from all the numbers of the matrix
-	 * and returns a new instance of the resultant matrix.
-	 */
+
 	public Matrix subtract(Number val){
 		return SubtractUtils.subtract(this, val);
 	}
@@ -127,10 +127,7 @@ public class Matrix{
 		return AddUtils.add(this, val);
 	}
 
-	/*
-	 * Multiplies the matrix numbers with the scalar value passed as input
-	 * and returns a new instance of the resultant matrix.
-	 */
+
 	public Matrix multiply(Number val){
 		return MultiplyUtils.multiply(this, val);	
 	}
@@ -143,10 +140,6 @@ public class Matrix{
 		return MultiplyUtils.square(this);
 	}
 	
-	/*
-	 * Computes the matrix multiplication between two matrices parallely. The number of the threads
-	 * that operate on the matrix is determined by the number of processors that system has.
-	 */
 	public Matrix multiply(Matrix other){
 		return MultiplyUtils.multiply(this,other);
 	}
