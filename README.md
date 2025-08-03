@@ -2,7 +2,7 @@
 
 JMatrix is a lightweight Java package developed as a learning project to explore matrix operations. It provides basic functionality for 2D matrix calculations such as addition, multiplication, and aggregation, with some operations optimized using multithreading. The package is designed to be simple and easy to use, making it a practical tool for those interested in understanding the fundamentals of numerical computing in Java.
 
-<img width="1536" height="1024" src="https://github.com/user-attachments/assets/874d06c6-bc9d-4404-9813-4885a88fb8c6" />
+<img width="1280" height="533" src="https://github.com/user-attachments/assets/9fbac836-c1d7-49c3-92fc-02ee5256dbeb" />
 
 ## Current Benchmarks
 
