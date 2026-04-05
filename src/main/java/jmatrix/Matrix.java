@@ -15,6 +15,8 @@ import operations.SubtractUtils;
 
 public class Matrix{
 	private double mat[][];
+
+	private double temp[];
 	
 	private final int colSize, rowSize;
 	
@@ -118,7 +120,7 @@ public class Matrix{
 	}
 	
 
-	public Matrix subtract(Number val){
+	public Matrix subtract(double val){
 		return SubtractUtils.subtract(this, val);
 	}
 	

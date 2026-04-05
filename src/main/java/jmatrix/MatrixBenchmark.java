@@ -24,9 +24,9 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Thread)
-@Warmup(iterations = 5)
-@Measurement(iterations = 5)
-@Fork(2)
+@Warmup(iterations = 3)
+@Measurement(iterations = 3)
+@Fork(1)
 public class MatrixBenchmark {
 
     @Param({"2048"})
@@ -35,8 +35,13 @@ public class MatrixBenchmark {
     @Param({"2048"})
     public int cols;
 
+     @Param({"2d","123938749374d"})
+     double toSubtract;
+
     private double[][] a2d, b2d;
     private double[] a1d, b1d;
+
+    private Matrix mat1, mat2;
 
     public static void main(String args[]) throws Exception{
         Options opt = new OptionsBuilder()
@@ -67,9 +72,30 @@ public class MatrixBenchmark {
                 b1d[i * cols + j] = valB;
             }
         }
+
+        mat1 = new Matrix(a2d);
+        mat2 = new Matrix(b2d);
     }
 
     @Benchmark
+    public void subtractParallel(){
+        mat1.subtract(toSubtract);
+    }
+
+    @Benchmark
+    public void subtractNormal(){
+        int r = mat1.getRowSize();
+        int c = mat1.getColumnSize();
+        double res[][] = new double[r][c];
+        for(int i = 0;i<r;i++){
+            for(int j = 0;j<c;j++){
+                res[i][j] = mat1.get(i, j) - toSubtract;
+            }
+        }
+
+    }
+
+    //@Benchmark
     public double divide2D() {
         double checksum = 0;
         for (int i = 0; i < rows; i++) {
@@ -81,7 +107,7 @@ public class MatrixBenchmark {
         return checksum;
     }
 
-    @Benchmark
+    //@Benchmark
     public double divide1D() {
         double checksum = 0;
         for (int i = 0; i < rows * cols; i++) {
