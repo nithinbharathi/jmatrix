@@ -42,7 +42,7 @@ public class Matrix{
 		this.mat  = mat;
 	}
 	
-	/** */
+	/**
 	 * Creates matrix with the given dimensions, filled with zeros.
 	 * @param rowSize the number of rows in the matrix
 	 * @param colSize the number of columns in the matrix
