@@ -20,9 +20,8 @@ public class Matrix{
 	
 	private StringBuilder matrixRepresentation = null;
 	
-	/*
-	 * Accepts a single dimensional array and transforms it into a matrix 
-	 * based on the dimensions specified.
+	/**
+	 * Accepts a single dimensional array and transforms it into a matrix based on the dimensions specified.
 	 * @param mat 1d double array
 	 * @param rowSize the number of rows in the matrix
 	 * @param colSize the number of columns in the matrix
@@ -33,7 +32,7 @@ public class Matrix{
 		this.mat = transform(mat);
 	}
 	
-	/*
+	/**
 	 * Creates a matrix using the 2d array specified.
 	 * @param mat 2d double array
 	 */
@@ -43,7 +42,7 @@ public class Matrix{
 		this.mat  = mat;
 	}
 	
-	/*
+	/** */
 	 * Creates matrix with the given dimensions, filled with zeros.
 	 * @param rowSize the number of rows in the matrix
 	 * @param colSize the number of columns in the matrix
