@@ -16,7 +16,7 @@ import operations.SubtractUtils;
 public class Matrix{
 	private double mat[][];
 
-	private double temp[];
+	public double temp[]; //should be made private
 	
 	private final int colSize, rowSize;
 	
@@ -31,7 +31,8 @@ public class Matrix{
 	public Matrix(double mat[],int rowSize, int colSize){		
 		this.colSize = colSize;
 		this.rowSize = rowSize;
-		this.mat = transform(mat);
+		this.temp = mat;
+		//this.mat = transform(mat);
 	}
 	
 	/**
@@ -41,7 +42,18 @@ public class Matrix{
 	public Matrix(double mat[][]){
 		this.rowSize = mat.length;
 		this.colSize = mat[0].length;
+		fillMatrix(mat);
 		this.mat  = mat;
+	}
+
+	private void fillMatrix(double mat[][]){
+		temp = new double[rowSize*colSize];
+		int z = 0;
+		for(int i =0;i<rowSize;i++){
+			for(int j = 0;j<colSize;j++){
+				temp[z++] = mat[i][j];
+			}
+		}
 	}
 	
 	/**
@@ -96,7 +108,8 @@ public class Matrix{
 		matrixRepresentation = new StringBuilder();
 		for(int i =0;i<rowSize;i++){
 			for(int j =0;j<colSize;j++){
-				matrixRepresentation.append(mat[i][j]);
+				int ind = i*colSize+j;
+				matrixRepresentation.append(temp[ind]);
 				matrixRepresentation.append(" ");
 			}
 			matrixRepresentation.append("\n");
@@ -111,7 +124,7 @@ public class Matrix{
 	 * calls. However, The first invocation costs O(row*col).
 	 */
 	public void view(){	
-		if(matrixRepresentation == null)buildMatrix();		
+		buildMatrix();		
 		System.out.println(matrixRepresentation);
 	}
 	
