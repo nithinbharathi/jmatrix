@@ -25,8 +25,8 @@ import jmatrix.Matrix;
 @BenchmarkMode({Mode.AverageTime})
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Thread)
-@Warmup(iterations = 1, time = 1)
-@Measurement(iterations = 1, time =1)
+@Warmup(iterations = 5, time = 1)
+@Measurement(iterations = 3, time =1)
 @Fork(value = 1, jvmArgs = {"--add-modules", "jdk.incubator.vector", "--enable-preview"})
 public class BenchmarkMultiply {
 
@@ -94,13 +94,21 @@ public class BenchmarkMultiply {
         int n = mat2d1.getRowSize(), m = mat2.getColumnSize();
         double res[][] = new double[n][m];
         for(int i = 0;i<n;i++){
-            for(int j = 0;j<m;j++){
-                for(int k = 0;k<mat2.getRowSize();k++){
+        	for(int k = 0;k<mat2.getRowSize();k++){
+            	for(int j = 0;j<m;j++){
                     res[i][j] += mat1.get(i, k)*mat2.get(k,i);
                 }
             }
         }
 
         return new Matrix(res);
+    }
+    
+    @Benchmark
+    public Matrix multiplyParallel() {
+    	  Matrix mat1 = mat2d1;
+          Matrix mat2 = mat2d2;
+          
+          return mat1.multiply(mat2);
     }
 }
