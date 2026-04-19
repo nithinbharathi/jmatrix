@@ -1,6 +1,10 @@
 package benchmark;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.openjdk.jmh.annotations.Benchmark;
@@ -19,6 +23,8 @@ import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
+import jdk.incubator.vector.DoubleVector;
+import jdk.incubator.vector.VectorSpecies;
 import jmatrix.Matrix;
 
 
@@ -30,7 +36,7 @@ import jmatrix.Matrix;
 @Fork(value = 1, jvmArgs = {"--add-modules", "jdk.incubator.vector", "--enable-preview"})
 public class BenchmarkMultiply {
 
-    @Param({"1024"})
+    @Param({"2048"})
     public int rows;
 
     @Param({ "2048"})
@@ -43,6 +49,7 @@ public class BenchmarkMultiply {
     private double[] a1d, b1d;
 
     private Matrix mat2d1, mat2d2, mat1d1, mat1d2;
+    private static final VectorSpecies<Double> SPECIES = DoubleVector.SPECIES_PREFERRED;
 
     public static void main(String args[]) throws Exception{
        Options opt = new OptionsBuilder()
@@ -110,5 +117,44 @@ public class BenchmarkMultiply {
           Matrix mat2 = mat2d2;
           
           return mat1.multiply(mat2);
+    }
+    
+    @Benchmark
+    public Matrix multiplyParallelSIMD() {
+
+        List<Future<?>> futures = new ArrayList<>();
+        
+        int n = mat2d1.getRowSize(), m = mat2d2.getColumnSize();
+        double res[][] = new double[n][m];
+
+        double a[][] = a2d;
+        double b[][] = b2d;
+        for (int i = 0; i < n; i++) {
+            final int row = i;
+            futures.add(ForkJoinPool.commonPool().submit(() -> {
+                for (int k = 0; k < mat2d1.getColumnSize(); k++) {
+                    DoubleVector va = DoubleVector.broadcast(SPECIES, a[row][k]);
+                    int j = 0;
+                    for (; j < SPECIES.loopBound(m); j += SPECIES.length()) {
+                        DoubleVector vb = DoubleVector.fromArray(SPECIES, b[k], j);
+                        DoubleVector vr = DoubleVector.fromArray(SPECIES, res[row], j);
+                        va.fma(vb, vr).intoArray(res[row], j);
+                    }
+                    for (; j < m; j++) {
+                        res[row][j] += a[row][k] * b[k][j];
+                    }
+                }
+            }));
+        }
+
+        for (Future<?> future : futures) {
+            try {
+                future.get();
+            } catch (Exception e) {
+                throw new RuntimeException("Matrix multiplication interrupted", e);
+            }
+        }
+
+        return new Matrix(res);
     }
 }
