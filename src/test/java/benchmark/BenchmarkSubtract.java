@@ -19,6 +19,7 @@ import org.openjdk.jmh.annotations.Warmup;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
+
 import jdk.incubator.vector.DoubleVector;
 import jdk.incubator.vector.VectorSpecies;
 import jmatrix.Matrix;
@@ -31,10 +32,10 @@ import jmatrix.Matrix;
 @Fork(value = 1, jvmArgs = {"--add-modules", "jdk.incubator.vector", "--enable-preview"})
 public class BenchmarkSubtract {
 
-    @Param({"1024","4096", "2048" })
+    @Param({"4096"})
     public int rows;
 
-    @Param({ "2048", "10000"})
+    @Param({ "2048"})
     public int cols;
 
      double toSubtract;
@@ -83,7 +84,7 @@ public class BenchmarkSubtract {
     }
     
     // Wanted to test the performance of vector API. No big difference. Should try testing on a bigger machine.
-   @Benchmark
+    @Benchmark
     public void simd() {
     	int i = 0;
     	 int r = mat1.getRowSize();
