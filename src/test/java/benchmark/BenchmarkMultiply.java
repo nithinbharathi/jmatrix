@@ -31,15 +31,15 @@ import jmatrix.Matrix;
 @BenchmarkMode({Mode.AverageTime})
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Thread)
-@Warmup(iterations = 5, time = 1)
-@Measurement(iterations = 3, time =1)
+@Warmup(iterations = 5, time = 3)
+@Measurement(iterations = 3, time =3)
 @Fork(value = 1, jvmArgs = {"--add-modules", "jdk.incubator.vector", "--enable-preview"})
 public class BenchmarkMultiply {
 
-    @Param({"2048"})
+    @Param({"2048", "128"})
     public int rows;
 
-    @Param({ "2048"})
+    @Param({ "2048", "512"})
     public int cols;
 
      double toSubtract;
@@ -67,7 +67,7 @@ public class BenchmarkMultiply {
         a2d = new double[rows][cols];
         b2d = new double[cols][rows];
         a1d = new double[rows * cols];
-        b1d = new double[rows * cols];
+        b1d = new double[cols * rows];
 
         toSubtract = rand.nextDouble();
 
@@ -75,7 +75,7 @@ public class BenchmarkMultiply {
             for (int j = 0; j < cols; j++) {
                 double valA = rand.nextDouble() + 1e-9;
                 a2d[i][j] = valA;
-                //a1d[i * cols + j] = valA;
+                a1d[i * cols + j] = valA;
             }
         }
 
@@ -83,7 +83,7 @@ public class BenchmarkMultiply {
             for(int j = 0;j<rows;j++){
                  double valB = rand.nextDouble() + 1e-9;
                   b2d[i][j] = valB;
-                  //b1d[i * cols + j] = valB;
+                  b1d[i * rows + j] = valB;
             }
         }
 
@@ -91,7 +91,7 @@ public class BenchmarkMultiply {
         mat2d2 = new Matrix(b2d);
 
         mat1d1 = new Matrix(a1d, rows, cols);
-        mat1d2 = new Matrix(b1d, rows, cols);
+        mat1d2 = new Matrix(b1d, cols, rows);
     }
 
     @Benchmark
@@ -156,5 +156,43 @@ public class BenchmarkMultiply {
         }
 
         return new Matrix(res);
+    }
+    
+    @Benchmark
+    public Matrix multiplyFlatParallelSIMD() {
+        int n = mat2d1.getRowSize(), m = mat2d2.getColumnSize();
+
+        double[] res = new double[n * m];
+        double a[] = a1d;
+        double b[] = b1d;
+        int inner = mat2d1.getColumnSize();
+        List<Future<?>> futures = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+        	final int row = i;
+        	futures.add(ForkJoinPool.commonPool().submit(() -> {
+            for (int k = 0; k < inner; k++) {
+                DoubleVector va = DoubleVector.broadcast(SPECIES, a[row * inner + k]);
+                int j = 0;
+                for (; j < SPECIES.loopBound(m); j += SPECIES.length()) {
+                    DoubleVector vb = DoubleVector.fromArray(SPECIES, b, k * m + j);
+                    DoubleVector vr = DoubleVector.fromArray(SPECIES, res, row * m + j);
+                    va.fma(vb, vr).intoArray(res, row * m + j);
+                }
+                // tail
+                for (; j < m; j++) {
+                    res[row * m + j] += a[row * inner + k] * b[k * m + j];
+                }
+            }}));
+        };
+        
+        for (Future<?> future : futures) {
+            try {
+                future.get();
+            } catch (Exception e) {
+                throw new RuntimeException("Matrix multiplication interrupted", e);
+            }
+        }
+
+        return new Matrix(res, rows, cols);
     }
 }
