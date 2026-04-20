@@ -6,6 +6,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
 import java.util.concurrent.Future;
+import java.util.stream.IntStream;
 
 import jmatrix.Matrix;
 
@@ -24,32 +25,20 @@ public final class MultiplyUtils {
         int n = mat1.getRowSize();
         int m = mat2.getColumnSize();
         
-        double[][] res = new double[n][m];
-        List<Future<?>>futures = new ArrayList<>();
+        double res[] = new double[n*m];
 
-        for (int i = 0; i < n; i++) {
+       
+        IntStream.range(0, n).parallel().forEach(i -> {
             int row = i;
-            futures.add(
-            ForkJoinPool.commonPool().submit(() -> {
             	for (int k = 0; k < mat1.getColumnSize(); k++) {
                     double sum = 0;
                     for (int col = 0; col < m; col++) {
-                        res[row][col] += mat1.get(row,k) * mat2.get(k, col);
+                        res[row*m+col] += mat1.get(row,k) * mat2.get(k, col);
                     }
                 }
-            }));
-        }
-
-        for(Future<?>future:futures)
-            try{
-                future.get();
-            } catch(Exception e){
-                throw new RuntimeException("Matrix multiplication interrupted", e);
-            }
-            
-
-       
-	    return new Matrix(res);
+            });
+        
+	    return new Matrix(res, n, m);
 	}
 
     public static Matrix multiply(Matrix mat, Number val){
